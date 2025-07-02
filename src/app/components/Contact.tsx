@@ -2,8 +2,17 @@
 
 import { useState } from "react";
 
+type FormState = {
+  name: string;
+  phone: string;
+  email: string;
+  message: string;
+  time: string;
+  agreed: boolean;
+};
+
 export default function Contact() {
-  const [form, setForm] = useState({
+  const [form, setForm] = useState<FormState>({
     name: "",
     phone: "",
     email: "",
@@ -12,7 +21,7 @@ export default function Contact() {
     agreed: false,
   });
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<keyof FormState, string>>({} as any);
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -32,7 +41,7 @@ export default function Contact() {
   };
 
   const validate = () => {
-    const newErrors: Record<string, string> = {};
+    const newErrors: Partial<Record<keyof FormState, string>> = {};
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!form.phone.trim()) newErrors.phone = "Phone number is required";
     if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email))
@@ -40,7 +49,7 @@ export default function Contact() {
     if (!form.message.trim()) newErrors.message = "Message is required";
     if (!form.time.trim()) newErrors.time = "Preferred time is required";
     if (!form.agreed) newErrors.agreed = "You must agree to be contacted";
-    setErrors(newErrors);
+    setErrors(newErrors as Record<keyof FormState, string>);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -52,6 +61,23 @@ export default function Contact() {
     }
   };
 
+  const inputs: {
+    label: string;
+    name: keyof FormState;
+    type: string;
+    required: boolean;
+  }[] = [
+    { label: "Name", name: "name", type: "text", required: true },
+    { label: "Phone", name: "phone", type: "text", required: true },
+    { label: "Email", name: "email", type: "email", required: true },
+    {
+      label: "Preferred time to reach you",
+      name: "time",
+      type: "text",
+      required: true,
+    },
+  ];
+
   return (
     <section className="bg-white py-16 px-6 md:px-20">
       <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
@@ -59,27 +85,19 @@ export default function Contact() {
       </h2>
 
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6">
-        {[
-          { label: "Name", name: "name", type: "text", required: true },
-          { label: "Phone", name: "phone", type: "text", required: true },
-          { label: "Email", name: "email", type: "email", required: true },
-          {
-            label: "Preferred time to reach you",
-            name: "time",
-            type: "text",
-            required: true,
-          },
-        ].map(({ label, name, type, required }) => (
+        {inputs.map(({ label, name, type, required }) => (
           <div key={name}>
-            <label className="block text-gray-700 font-medium mb-1">
+            <label htmlFor={name} className="block text-gray-700 font-medium mb-1">
               {label} {required && "*"}
             </label>
             <input
+              id={name}
               type={type}
               name={name}
-              value={(form as any)[name]}
+              value={form[name]}
               onChange={handleChange}
               className="w-full border rounded px-3 py-2"
+              required={required}
             />
             {errors[name] && (
               <p className="text-red-500 text-sm">{errors[name]}</p>
@@ -89,15 +107,17 @@ export default function Contact() {
 
         {/* Message Field */}
         <div>
-          <label className="block text-gray-700 font-medium mb-1">
+          <label htmlFor="message" className="block text-gray-700 font-medium mb-1">
             What brings you here? *
           </label>
           <textarea
+            id="message"
             name="message"
             value={form.message}
             onChange={handleChange}
             rows={4}
             className="w-full border rounded px-3 py-2"
+            required
           />
           {errors.message && (
             <p className="text-red-500 text-sm">{errors.message}</p>
@@ -107,13 +127,17 @@ export default function Contact() {
         {/* Agreement Checkbox */}
         <div className="flex items-center">
           <input
+            id="agreed"
             type="checkbox"
             name="agreed"
             checked={form.agreed}
             onChange={handleChange}
             className="mr-2"
+            required
           />
-          <label className="text-gray-700">I agree to be contacted *</label>
+          <label htmlFor="agreed" className="text-gray-700">
+            I agree to be contacted *
+          </label>
         </div>
         {errors.agreed && (
           <p className="text-red-500 text-sm">{errors.agreed}</p>
