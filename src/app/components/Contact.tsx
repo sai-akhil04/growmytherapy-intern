@@ -11,6 +11,9 @@ type FormState = {
   agreed: boolean;
 };
 
+// Exclude "agreed" from inputs because it's a checkbox (boolean)
+type InputField = Exclude<keyof FormState, "agreed">;
+
 export default function Contact() {
   const [form, setForm] = useState<FormState>({
     name: "",
@@ -21,12 +24,12 @@ export default function Contact() {
     agreed: false,
   });
 
-  const [errors, setErrors] = useState<Record<keyof FormState, string>>({} as any);
+  const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const target = e.target;
+    const target = e.target as HTMLInputElement | HTMLTextAreaElement;
     const { name, type, value } = target;
 
     const updatedValue =
@@ -49,7 +52,7 @@ export default function Contact() {
     if (!form.message.trim()) newErrors.message = "Message is required";
     if (!form.time.trim()) newErrors.time = "Preferred time is required";
     if (!form.agreed) newErrors.agreed = "You must agree to be contacted";
-    setErrors(newErrors as Record<keyof FormState, string>);
+    setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -63,7 +66,7 @@ export default function Contact() {
 
   const inputs: {
     label: string;
-    name: keyof FormState;
+    name: InputField;
     type: string;
     required: boolean;
   }[] = [
