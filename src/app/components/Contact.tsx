@@ -12,7 +12,7 @@ export default function Contact() {
     agreed: false,
   });
 
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -32,8 +32,7 @@ export default function Contact() {
   };
 
   const validate = () => {
-    const newErrors: { [key: string]: string } = {};
-
+    const newErrors: Record<string, string> = {};
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!form.phone.trim()) newErrors.phone = "Phone number is required";
     if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email))
@@ -41,7 +40,6 @@ export default function Contact() {
     if (!form.message.trim()) newErrors.message = "Message is required";
     if (!form.time.trim()) newErrors.time = "Preferred time is required";
     if (!form.agreed) newErrors.agreed = "You must agree to be contacted";
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -50,7 +48,7 @@ export default function Contact() {
     e.preventDefault();
     if (validate()) {
       alert("Form submitted successfully!");
-      // You can add API call here
+      // TODO: Add API call here
     }
   };
 
@@ -61,46 +59,35 @@ export default function Contact() {
       </h2>
 
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6">
-        {/* Name */}
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">Name *</label>
-          <input
-            type="text"
-            name="name"
-            value={form.name}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-          {errors.name && <p className="text-red-500 text-sm">{errors.name}</p>}
-        </div>
+        {[
+          { label: "Name", name: "name", type: "text", required: true },
+          { label: "Phone", name: "phone", type: "text", required: true },
+          { label: "Email", name: "email", type: "email", required: true },
+          {
+            label: "Preferred time to reach you",
+            name: "time",
+            type: "text",
+            required: true,
+          },
+        ].map(({ label, name, type, required }) => (
+          <div key={name}>
+            <label className="block text-gray-700 font-medium mb-1">
+              {label} {required && "*"}
+            </label>
+            <input
+              type={type}
+              name={name}
+              value={(form as any)[name]}
+              onChange={handleChange}
+              className="w-full border rounded px-3 py-2"
+            />
+            {errors[name] && (
+              <p className="text-red-500 text-sm">{errors[name]}</p>
+            )}
+          </div>
+        ))}
 
-        {/* Phone */}
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">Phone *</label>
-          <input
-            type="text"
-            name="phone"
-            value={form.phone}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-          {errors.phone && <p className="text-red-500 text-sm">{errors.phone}</p>}
-        </div>
-
-        {/* Email */}
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">Email *</label>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-          {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
-        </div>
-
-        {/* Message */}
+        {/* Message Field */}
         <div>
           <label className="block text-gray-700 font-medium mb-1">
             What brings you here? *
@@ -112,25 +99,12 @@ export default function Contact() {
             rows={4}
             className="w-full border rounded px-3 py-2"
           />
-          {errors.message && <p className="text-red-500 text-sm">{errors.message}</p>}
+          {errors.message && (
+            <p className="text-red-500 text-sm">{errors.message}</p>
+          )}
         </div>
 
-        {/* Preferred Time */}
-        <div>
-          <label className="block text-gray-700 font-medium mb-1">
-            Preferred time to reach you *
-          </label>
-          <input
-            type="text"
-            name="time"
-            value={form.time}
-            onChange={handleChange}
-            className="w-full border rounded px-3 py-2"
-          />
-          {errors.time && <p className="text-red-500 text-sm">{errors.time}</p>}
-        </div>
-
-        {/* Agreement */}
+        {/* Agreement Checkbox */}
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -141,7 +115,9 @@ export default function Contact() {
           />
           <label className="text-gray-700">I agree to be contacted *</label>
         </div>
-        {errors.agreed && <p className="text-red-500 text-sm">{errors.agreed}</p>}
+        {errors.agreed && (
+          <p className="text-red-500 text-sm">{errors.agreed}</p>
+        )}
 
         {/* Submit Button */}
         <button
