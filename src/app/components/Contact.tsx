@@ -14,13 +14,26 @@ export default function Contact() {
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value, type, checked } = e.target;
-    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const target = e.target;
+    const { name, type, value } = target;
+
+    const updatedValue =
+      type === "checkbox" && target instanceof HTMLInputElement
+        ? target.checked
+        : value;
+
+    setForm((prev) => ({
+      ...prev,
+      [name]: updatedValue,
+    }));
   };
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
+
     if (!form.name.trim()) newErrors.name = "Name is required";
     if (!form.phone.trim()) newErrors.phone = "Phone number is required";
     if (!form.email.trim() || !/\S+@\S+\.\S+/.test(form.email))
@@ -28,6 +41,7 @@ export default function Contact() {
     if (!form.message.trim()) newErrors.message = "Message is required";
     if (!form.time.trim()) newErrors.time = "Preferred time is required";
     if (!form.agreed) newErrors.agreed = "You must agree to be contacted";
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -36,13 +50,16 @@ export default function Contact() {
     e.preventDefault();
     if (validate()) {
       alert("Form submitted successfully!");
-      // You can add form submission logic here
+      // You can add API call here
     }
   };
 
   return (
     <section className="bg-white py-16 px-6 md:px-20">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">Contact</h2>
+      <h2 className="text-3xl font-bold text-center text-gray-800 mb-12">
+        Contact
+      </h2>
+
       <form onSubmit={handleSubmit} className="max-w-2xl mx-auto space-y-6">
         {/* Name */}
         <div>
@@ -83,7 +100,7 @@ export default function Contact() {
           {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
         </div>
 
-        {/* What brings you here */}
+        {/* Message */}
         <div>
           <label className="block text-gray-700 font-medium mb-1">
             What brings you here? *
@@ -98,7 +115,7 @@ export default function Contact() {
           {errors.message && <p className="text-red-500 text-sm">{errors.message}</p>}
         </div>
 
-        {/* Preferred time */}
+        {/* Preferred Time */}
         <div>
           <label className="block text-gray-700 font-medium mb-1">
             Preferred time to reach you *
@@ -113,7 +130,7 @@ export default function Contact() {
           {errors.time && <p className="text-red-500 text-sm">{errors.time}</p>}
         </div>
 
-        {/* Agreement checkbox */}
+        {/* Agreement */}
         <div className="flex items-center">
           <input
             type="checkbox"
@@ -126,7 +143,7 @@ export default function Contact() {
         </div>
         {errors.agreed && <p className="text-red-500 text-sm">{errors.agreed}</p>}
 
-        {/* Submit button */}
+        {/* Submit Button */}
         <button
           type="submit"
           className="bg-blue-600 text-white font-medium px-6 py-2 rounded hover:bg-blue-700"
